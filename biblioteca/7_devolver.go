@@ -150,7 +150,7 @@ func Devolvendo(w http.ResponseWriter, r *http.Request) {
 	}
 	defer statement1.Close()
 
-	//Executo o statment e salvo os dados alterados
+	//Executo o statement e salvo os dados alterados
 	_, erro = statement1.Exec(devolver.Nome_Usuario, devolver.Titulo_livro, devolver.Data_Emprestimo.Format("2006-01-02"), devolver.Data_Devolucao.Format("2006-01-02"))
 	if erro != nil {
 		TratandoErros(w, "Erro ao executar o statement", 422)
