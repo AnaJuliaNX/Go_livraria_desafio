@@ -17,7 +17,7 @@ func ListarUMUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usuariobuscado, erro := buscandoUMUsuario(int(ID))
+	usuariobuscado, erro := BuscandoUMUsuario(int(ID))
 	if erro != nil {
 		TratandoErros(w, "Erro ao buscar o ID do usuario", 422)
 		return

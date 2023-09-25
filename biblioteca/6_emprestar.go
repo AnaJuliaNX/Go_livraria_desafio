@@ -24,7 +24,7 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Busco cada dado do usuário
-	usuariobuscado, erro := buscandoUMUsuario(int(usuario_id))
+	usuariobuscado, erro := BuscandoUMUsuario(int(usuario_id))
 	if erro != nil {
 		TratandoErros(w, "Erro ao converter o parametro para inteiro", 422)
 	}
@@ -56,7 +56,7 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Crio uma variavel para que possa fazer a conversão de json para struct
-	var emprestar dados.DataEmprestimo
+	var emprestar dados.EmprestimoDevolucao
 	erro = json.Unmarshal(corpoRequisicao, &emprestar)
 	if erro != nil {
 		TratandoErros(w, "Erro ao converter json para struct", 422)
@@ -73,6 +73,7 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 		emprestar.Data_Devolucao = emprestar.Data_Emprestimo.Add(15 * 24 * time.Hour)
 		emprestar.Taxa_Emprestimo = float64(emprestar.Quantidade) * 5.50
 
+		//Se tiver tudo certo vai imprimir essas coisas
 		fmt.Println("Usuário:", emprestar.Nome_Usuario)
 		fmt.Println("Titulo selecionado:", emprestar.Titulo_livro)
 		fmt.Println("A taxa cobrada foi de:", emprestar.Taxa_Emprestimo)
@@ -80,22 +81,27 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("A data da devolução será:", emprestar.Data_Devolucao.Format("02/01/2006 03:04:05"))
 
 	} else {
+		//Se o estoque for menor do que eu to querendo emprestar ele exibe isso
 		fmt.Println("Estoque insuficiente")
 	}
 
+	//Aqui eu faço a alteração do estoque, ou seja, reduzindo a quantidade que tenho salvo
 	erro = AlterarEstoque(int(livro_id), livrobuscado.Estoque)
 	if erro != nil {
 		TratandoErros(w, erro.Error(), 422)
 		return
 	}
 
+	//Aqui abro o banco para fazer a alteração no estoque
 	db, erro := banco.ConectarNoBanco()
 	if erro != nil {
 		TratandoErros(w, "Erro ao se conectar no banco de dados", 422)
 		return
 	}
+	//fecho o banco quando terminar o que preciso
 	defer db.Close()
 
+	//Aqui crio um statemen e preparo ele para armazernar as coisas especificadas ali
 	statement, erro := db.Prepare("insert into emprestimo_devolucao(nome_usuario, titulo_livro, data_emprestimo, data_devolucao, taxa_emprestimo) values (?, ?, ?, ?, ?)")
 	if erro != nil {
 		TratandoErros(w, "Erro ao criar o statement", 422)

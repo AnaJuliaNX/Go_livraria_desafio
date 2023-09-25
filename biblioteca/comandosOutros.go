@@ -32,7 +32,7 @@ func BuscandoOSUsuarios() ([]dados.Usuario, error) {
 	return usuarios, nil
 }
 
-func buscandoUMUsuario(ID int) (dados.Usuario, error) {
+func BuscandoUMUsuario(ID int) (dados.Usuario, error) {
 
 	db, erro := ConectandoNoBanco()
 	if erro != nil {
