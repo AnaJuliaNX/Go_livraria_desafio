@@ -52,7 +52,7 @@ func Devolvendo(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	//Busca todos os dados de todos os empréstimos para que eu possa achar a que preciso
-	linhas, erro := db.Query("select nome_usuario, titulo_livro, data_emprestimo, data_devolucao, taxa_emprestimo from emprestimo_devolucao where nome_usuario = ? and titulo_livro = ?", usuariobuscado.Nome, livrobuscado.Titulo)
+	linhas, erro := db.Query("select nome_usuario, titulo_livro, data_emprestimo from emprestimo_devolucao where nome_usuario = ? and titulo_livro = ? and data_devolucao is null", usuariobuscado.Nome, livrobuscado.Titulo)
 	if erro != nil {
 		TratandoErros(w, "Erro ao buscar dados dos emprestimos", 422)
 		return
@@ -66,11 +66,10 @@ func Devolvendo(w http.ResponseWriter, r *http.Request) {
 			&emprestado.Nome_Usuario,
 			&emprestado.Titulo_livro,
 			&emprestado.Data_Emprestimo,
-			&emprestado.Data_Devolucao,
-			&emprestado.Taxa_Emprestimo,
 		)
 
 		if err != nil {
+			fmt.Println(erro)
 			TratandoErros(w, "Erro ao escanear os dados dos empréstimos", 422)
 			return
 		}
@@ -103,30 +102,30 @@ func Devolvendo(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Titulo do livro diferente do emprestado")
 	}
 
-	//data pre determinada, para fins de teste apenas
-	//devolucaoHoje := time.Date(2023, 10, 21, 20, 10, 0, 0, time.Local)
-
 	//Data da devolução em tempo real
 	devolucaoHoje := time.Now()
-
+	dataEsperada := emprestado.Data_Emprestimo.Add(15 * 24 * time.Hour)
 	//Formato para que consiga fazer a comparação das datas
 	hojeFormatada := devolucaoHoje.Unix()
-	devolucaoFormatada := emprestado.Data_Devolucao.Unix()
+	emprestimoFormatada := dataEsperada.Unix()
+	fmt.Println(hojeFormatada, emprestimoFormatada)
 
 	//Se a devolução foi feita até o prazo de quinze dias acabar executo o if, se foi depois executo o else
-	if hojeFormatada < devolucaoFormatada {
+	if hojeFormatada <= emprestimoFormatada {
 		livrobuscado.Estoque = livrobuscado.Estoque + devolver.Quantidade
+		devolver.Data_Devolucao = devolucaoHoje
 		fmt.Println("Usuário:", emprestado.Nome_Usuario)
 		fmt.Println("Livro:", emprestado.Titulo_livro)
 		fmt.Println("Devolução feita antes do prazo de 15 dias")
 
 	} else {
-		livrobuscado.Estoque = livrobuscado.Estoque + emprestado.Quantidade
+		livrobuscado.Estoque = livrobuscado.Estoque + devolver.Quantidade
+		devolver.Data_Devolucao = devolucaoHoje
+		devolver.Taxa_Emprestimo = float64(devolver.Quantidade) * 5.50
 		fmt.Println("Usuário:", emprestado.Nome_Usuario)
 		fmt.Println("Livro:", emprestado.Titulo_livro)
 		fmt.Println("Devolução feita após o prazo de quinze dias")
-		fmt.Println("Multa de: R$", emprestado.Taxa_Emprestimo)
-
+		fmt.Println("Multa de: R$", devolver.Taxa_Emprestimo)
 	}
 
 	//Executo esse comando para fazer a alteração do estoque
@@ -136,26 +135,15 @@ func Devolvendo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Dados que vou registrar no banco
-	devolver.Nome_Usuario = emprestado.Nome_Usuario
-	devolver.Titulo_livro = emprestado.Titulo_livro
-	devolver.Data_Emprestimo = emprestado.Data_Emprestimo
-	devolver.Data_Devolucao = devolucaoHoje
-
-	//Crio o statement para fazer a alteração e salvar os dados na tabela do banco
-	statement1, erro := db.Prepare("insert into emprestimo_devolucao(nome_usuario, titulo_livro, data_emprestimo, data_devolucao) values (?, ?, ?, ?)")
+	//Faço essa série de comandos para dar um update na data de devolução que antes estava como nulo
+	//E caso esteja atrasado também coloco uma multa
+	linhas1, erro := db.Query("update emprestimo_devolucao set data_devolucao = ?, taxa_emprestimo = ? where nome_usuario = ? and titulo_livro = ? and data_devolucao is null", devolver.Data_Devolucao, devolver.Taxa_Emprestimo, usuariobuscado.Nome, livrobuscado.Titulo)
 	if erro != nil {
-		TratandoErros(w, "Erro ao criar o statement", 422)
+		fmt.Println(erro)
+		TratandoErros(w, "Erro ao fazer a atualização", 422)
 		return
 	}
-	defer statement1.Close()
-
-	//Executo o statement e salvo os dados alterados
-	_, erro = statement1.Exec(devolver.Nome_Usuario, devolver.Titulo_livro, devolver.Data_Emprestimo.Format("2006-01-02"), devolver.Data_Devolucao.Format("2006-01-02"))
-	if erro != nil {
-		TratandoErros(w, "Erro ao executar o statement", 422)
-		return
-	}
+	defer linhas1.Close()
 
 	//Se não houve nenhum erro durante a execução do código exibo essa mensagem no final
 	TratandoErros(w, "Devolução realizada com sucesso", 200)

@@ -71,14 +71,15 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 		emprestar.Nome_Usuario = usuariobuscado.Nome
 		emprestar.Titulo_livro = livrobuscado.Titulo
 		emprestar.Data_Emprestimo = time.Now()
-		emprestar.Data_Devolucao = emprestar.Data_Emprestimo.Add(15 * 24 * time.Hour)
-		emprestar.Taxa_Emprestimo = float64(emprestar.Quantidade) * 5.50
+		dataEstimada := emprestar.Data_Emprestimo.Add(15 * 24 * time.Hour)
+		//emprestar.Data_Devolucao = emprestar.Data_Emprestimo.Add(15 * 24 * time.Hour)
+		//emprestar.Taxa_Emprestimo = float64(emprestar.Quantidade) * 5.50
 
 		fmt.Println("Usuário:", emprestar.Nome_Usuario)
 		fmt.Println("Titulo selecionado:", emprestar.Titulo_livro)
-		fmt.Println("A taxa cobrada foi de:", emprestar.Taxa_Emprestimo)
 		fmt.Println("A data do emprestimo é:", emprestar.Data_Emprestimo.Format("02/01/2006 03:04:05"))
-		fmt.Println("A data da devolução será:", emprestar.Data_Devolucao.Format("02/01/2006 03:04:05"))
+		fmt.Println("A data da devolução será:", dataEstimada.Format("02/01/2006 03:04:05"))
+		//fmt.Println("A taxa cobrada foi de:", emprestar.Taxa_Emprestimo)
 
 	} else {
 		fmt.Println("Estoque insuficiente")
@@ -100,7 +101,7 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	//Crio o statement que vai fazer a alteração e salvar os dados na tabela do banco
-	statement, erro := db.Prepare("insert into emprestimo_devolucao(nome_usuario, titulo_livro, data_emprestimo, data_devolucao, taxa_emprestimo) values (?, ?, ?, ?, ?)")
+	statement, erro := db.Prepare("insert into emprestimo_devolucao(nome_usuario, titulo_livro, data_emprestimo, taxa_emprestimo) values (?, ?, ?, ?)")
 	if erro != nil {
 		TratandoErros(w, "Erro ao criar o statement", 422)
 		return
@@ -108,7 +109,7 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 	defer statement.Close()
 
 	//Executo o statement e salvo os novos dados inseridos
-	_, erro = statement.Exec(emprestar.Nome_Usuario, emprestar.Titulo_livro, emprestar.Data_Emprestimo.Format("2006-01-02"), emprestar.Data_Devolucao.Format("2006-01-02"), emprestar.Taxa_Emprestimo)
+	_, erro = statement.Exec(emprestar.Nome_Usuario, emprestar.Titulo_livro, emprestar.Data_Emprestimo.Format("2006-01-02"), emprestar.Taxa_Emprestimo)
 	if erro != nil {
 		TratandoErros(w, "Erro ao executar o statement", 422)
 		return

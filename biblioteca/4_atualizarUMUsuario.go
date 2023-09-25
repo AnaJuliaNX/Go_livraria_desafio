@@ -62,4 +62,5 @@ func AtualizarUMUsuario(w http.ResponseWriter, r *http.Request) {
 
 	//Se não houver nenhum erro durante a execução do código exibo essa mensagem no final
 	TratandoErros(w, "Usuário atualizado com sucesso", 200)
+	return
 }
