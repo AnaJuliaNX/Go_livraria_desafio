@@ -13,10 +13,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Essa função serve para emprestar um livro e diminuir a quantidade dele salva no estoque
 func Emprestando(w http.ResponseWriter, r *http.Request) {
 	parametro := mux.Vars(r)
 
-	//Busca o usuário pelo ID
+	//Busco o usuário pelo ID
 	usuario_id, erro := strconv.ParseUint(parametro["usuario_id"], 10, 32)
 	if erro != nil {
 		TratandoErros(w, "Erro ao buscar o ID", 422)
@@ -24,7 +25,7 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Busco cada dado do usuário
-	usuariobuscado, erro := BuscandoUMUsuario(int(usuario_id))
+	usuariobuscado, erro := buscandoUMUsuario(int(usuario_id))
 	if erro != nil {
 		TratandoErros(w, "Erro ao converter o parametro para inteiro", 422)
 	}
@@ -41,7 +42,7 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Busca os dados que estão naquele livro com aquele ID
+	//Busca os dados que estão naquele livro com o ID especificado
 	livrobuscado, erro := BuscandoUMLivro(int(livro_id))
 	if erro != nil {
 		TratandoErros(w, "Erro ao converter o parametro para inteiro", 422)
@@ -63,8 +64,8 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Aqui executo apenas se o valor que estou querendo for menor que o do estoque
-	//Caso for maior que o que tenho ele vai para o else e da a msg do estoque insuficiente
+	//Aqui executo apenas se o valor que estou querendo for menor que o salvo no estoque
+	//Caso for maior que o que tenho ele vai para o else e da a mensasgem do estoque insuficiente
 	if livrobuscado.Estoque > emprestar.Quantidade {
 		livrobuscado.Estoque = livrobuscado.Estoque - emprestar.Quantidade
 		emprestar.Nome_Usuario = usuariobuscado.Nome
@@ -73,7 +74,6 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 		emprestar.Data_Devolucao = emprestar.Data_Emprestimo.Add(15 * 24 * time.Hour)
 		emprestar.Taxa_Emprestimo = float64(emprestar.Quantidade) * 5.50
 
-		//Se tiver tudo certo vai imprimir essas coisas
 		fmt.Println("Usuário:", emprestar.Nome_Usuario)
 		fmt.Println("Titulo selecionado:", emprestar.Titulo_livro)
 		fmt.Println("A taxa cobrada foi de:", emprestar.Taxa_Emprestimo)
@@ -81,27 +81,25 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("A data da devolução será:", emprestar.Data_Devolucao.Format("02/01/2006 03:04:05"))
 
 	} else {
-		//Se o estoque for menor do que eu to querendo emprestar ele exibe isso
 		fmt.Println("Estoque insuficiente")
 	}
 
-	//Aqui eu faço a alteração do estoque, ou seja, reduzindo a quantidade que tenho salvo
+	//Faço a alteração do estoque
 	erro = AlterarEstoque(int(livro_id), livrobuscado.Estoque)
 	if erro != nil {
 		TratandoErros(w, erro.Error(), 422)
 		return
 	}
 
-	//Aqui abro o banco para fazer a alteração no estoque
+	//Executo a função que vai fazer a conexão com o banco (mais informações no arquivo "comandosBancoErro")
 	db, erro := banco.ConectarNoBanco()
 	if erro != nil {
 		TratandoErros(w, "Erro ao se conectar no banco de dados", 422)
 		return
 	}
-	//fecho o banco quando terminar o que preciso
 	defer db.Close()
 
-	//Aqui crio um statemen e preparo ele para armazernar as coisas especificadas ali
+	//Crio o statement que vai fazer a alteração e salvar os dados na tabela do banco
 	statement, erro := db.Prepare("insert into emprestimo_devolucao(nome_usuario, titulo_livro, data_emprestimo, data_devolucao, taxa_emprestimo) values (?, ?, ?, ?, ?)")
 	if erro != nil {
 		TratandoErros(w, "Erro ao criar o statement", 422)
@@ -109,12 +107,14 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 	}
 	defer statement.Close()
 
+	//Executo o statement e salvo os novos dados inseridos
 	_, erro = statement.Exec(emprestar.Nome_Usuario, emprestar.Titulo_livro, emprestar.Data_Emprestimo.Format("2006-01-02"), emprestar.Data_Devolucao.Format("2006-01-02"), emprestar.Taxa_Emprestimo)
 	if erro != nil {
 		TratandoErros(w, "Erro ao executar o statement", 422)
 		return
 	}
 
+	//Se não houve nenhum erro durante a execução do código exibo essa mensagem no final
 	TratandoErros(w, "Emprestimo realizado com sucesso", 200)
 	return
 }

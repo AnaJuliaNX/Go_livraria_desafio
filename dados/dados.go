@@ -23,7 +23,10 @@ type EmprestimoDevolucao struct {
 	Taxa_Emprestimo float64   `json:"taxa_emprestimo"`
 }
 
-// Muito provavelmente não vou precisar disso aqui então vou tirar
+type RequestEmprestarLivro struct {
+	Emprestado int `json:"emprestado"`
+}
+
 type RequestDevolverLivro struct {
 	Devolvido   int     `json:"devolvido"`
 	TaxaCobrada float64 `json:"taxacobrada"`
