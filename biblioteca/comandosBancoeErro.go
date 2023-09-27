@@ -3,9 +3,11 @@ package biblioteca
 import (
 	"database/sql"
 	"errors"
+	"math"
 	"net/http"
 
 	"github.com/AnaJuliaNX/desafio2/banco"
+	"github.com/AnaJuliaNX/desafio2/dados"
 )
 
 // Função com finalidade de reduzi a repetição do mesmo comando em vários arquivos
@@ -26,4 +28,23 @@ func ConectandoNoBanco() (*sql.DB, error) {
 		return nil, errors.New("erro ao se conectar com o banco de dados")
 	}
 	return db, nil
+}
+
+func Paginacao(totalDeDados int64, dadosDoRetorno interface{}) dados.Response {
+
+	var meta dados.Meta
+	meta.Total_pages = 1
+	meta.Current_page = 1
+	meta.Total = totalDeDados
+
+	totalDePaginas := totalDeDados / 15
+	if totalDePaginas > 0 {
+		meta.Total_pages = int64(math.Round(float64(totalDePaginas)))
+	}
+
+	var response dados.Response
+	response.Data = dadosDoRetorno
+	response.Meta = meta
+
+	return response
 }

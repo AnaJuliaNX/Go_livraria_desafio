@@ -29,15 +29,18 @@ func ListarUMLivro(w http.ResponseWriter, r *http.Request) {
 		TratandoErros(w, "Erro ao converter o parametro para int", 422)
 		return
 	}
-
-	//Transformo os dados recebidos em struct para json, assim facilita o entendimento em outras linguagens
-	erro = json.NewEncoder(w).Encode(livroencontrado)
-	if erro != nil {
-		TratandoErros(w, "Erro ao converter para json", 422)
-		return
+	if livroencontrado.ID == 0 {
+		TratandoErros(w, "Livro não cadastrado", 404)
+	} else {
+		//Transformo os dados recebidos em struct para json, assim facilita o entendimento em outras linguagens
+		erro = json.NewEncoder(w).Encode(livroencontrado)
+		if erro != nil {
+			TratandoErros(w, "Erro ao converter para json", 422)
+			return
+		}
 	}
 
 	//Se não houver nenhum erro durante toda a execução do código exibo essa mensagem no final
-	TratandoErros(w, "Livro buscado com sucesso", 200)
-	return
+	// TratandoErros(w, "Livro buscado com sucesso", 200)
+	// return
 }

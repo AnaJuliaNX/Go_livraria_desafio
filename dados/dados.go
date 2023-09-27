@@ -27,7 +27,18 @@ type RequestEmprestarLivro struct {
 	Emprestado int `json:"emprestado"`
 }
 
-type RequestDevolverLivro struct {
-	Devolvido   int     `json:"devolvido"`
-	TaxaCobrada float64 `json:"taxacobrada"`
+// type RequestDevolverLivro struct {
+// 	Devolvido   int     `json:"devolvido"`
+// 	TaxaCobrada float64 `json:"taxacobrada"`
+// }
+
+type Meta struct {
+	Total        int64 `json:"total"`
+	Current_page int64 `json:"current_page"`
+	Total_pages  int64 `json:"total_pages"`
+}
+
+type Response struct {
+	Data interface{} `json:"data"`
+	Meta Meta        `json:"meta"`
 }

@@ -26,15 +26,18 @@ func ListarUMUsuario(w http.ResponseWriter, r *http.Request) {
 		TratandoErros(w, "Erro ao buscar o ID do usuario", 422)
 		return
 	}
-
-	//Altero os dados recebidos de struct para json, facilitado para outras linguagens
-	erro = json.NewEncoder(w).Encode(usuariobuscado)
-	if erro != nil {
-		TratandoErros(w, "Erro ao converter para json", 422)
-		return
+	if usuariobuscado.ID == 0 {
+		TratandoErros(w, "Usuário não encontrado", 404)
+	} else {
+		//Altero os dados recebidos de struct para json, facilitado para outras linguagens
+		erro = json.NewEncoder(w).Encode(usuariobuscado)
+		if erro != nil {
+			TratandoErros(w, "Erro ao converter para json", 422)
+			return
+		}
 	}
 
 	//Se não houve nenhum erro durante a execução do código exibo essa mensagem no final
-	TratandoErros(w, "Usuário buscado com sucesso", 200)
-	return
+	//TratandoErros(w, "Usuário buscado com sucesso", 200)
+	//return
 }

@@ -89,30 +89,3 @@ func AlterarEstoque(ID int, estoque int) error {
 	}
 	return nil
 }
-
-func BuscarDadosEmprestimo() ([]dados.EmprestimoDevolucao, error) {
-
-	db, erro := ConectandoNoBanco()
-	if erro != nil {
-		return nil, erro
-	}
-	defer db.Close()
-
-	linhas, erro := db.Query("select * from emprestimo_devolucao")
-	if erro != nil {
-		return nil, errors.New("erro ao buscar os dados dos empréstimos")
-	}
-	defer linhas.Close()
-
-	var dadosEmprestimos []dados.EmprestimoDevolucao
-	for linhas.Next() {
-		var dadosEmprestimo dados.EmprestimoDevolucao
-
-		if erro := linhas.Scan(&dadosEmprestimo.Nome_Usuario, &dadosEmprestimo.Titulo_livro, &dadosEmprestimo.Data_Emprestimo, &dadosEmprestimo.Data_Devolucao); erro != nil {
-			return nil, errors.New("erro ao escanear os dados de emprestimo")
-		}
-
-		dadosEmprestimos = append(dadosEmprestimos, dadosEmprestimo)
-	}
-	return dadosEmprestimos, nil
-}
