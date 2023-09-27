@@ -2,6 +2,7 @@ package biblioteca
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -43,6 +44,7 @@ func ListarOsLivros(w http.ResponseWriter, r *http.Request) {
 
 	//Se o total de livros encontrado for igual a 0 exibo o erro
 	if totalDeLivros == 0 {
+		fmt.Println(erro)
 		TratandoErros(w, "Nenhum livro encontrado", 404)
 		return
 	}
@@ -50,11 +52,24 @@ func ListarOsLivros(w http.ResponseWriter, r *http.Request) {
 	//Executo a função Paginacao (mais informações em "comandosBancoeErro")
 	response := Paginacao(totalDeLivros, livros)
 
-	//Se não houve nenhum erro durante a execução do código exibo essa mensagem no final
-	//Transformo os dados recebidos no formato struct para json, facilita o entendimento em outras linguagens
+	limit := 3
+	pagAtual := r.URL.Query().Get("page")
+
+	offset := limit * (pagAtual - 1)
+
+	linhas1, erro := db.Query("select * from livro_cadastrado order by id limit ? offset ?", limit, offset)
+	if erro != nil {
+		fmt.Println(erro)
+		TratandoErros(w, "Erro ao buscar 15 livros", 422)
+		return
+	}
+	defer linhas1.Close()
+
+	//Se não houve nenhum erro durante a execução até aqui finalizo transformando os dados recebeidos em json
 	erro = json.NewEncoder(w).Encode(response)
 	if erro != nil {
 		TratandoErros(w, "Erro ao converter para json", 422)
 		return
 	}
+
 }
