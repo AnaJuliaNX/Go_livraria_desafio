@@ -108,7 +108,6 @@ func Devolvendo(w http.ResponseWriter, r *http.Request) {
 	//Formato para que consiga fazer a comparação das datas
 	hojeFormatada := devolucaoHoje.Unix()
 	emprestimoFormatada := dataEsperada.Unix()
-	fmt.Println(hojeFormatada, emprestimoFormatada)
 
 	//Se a devolução foi feita até o prazo de quinze dias acabar executo o if, se foi depois executo o else
 	if hojeFormatada <= emprestimoFormatada {

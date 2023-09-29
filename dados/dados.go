@@ -28,9 +28,9 @@ type RequestEmprestarLivro struct {
 }
 
 type Meta struct {
-	Total_De_Itens int64 `json:"total_De_Itens"`
-	Current_page   int64 `json:"current_page"` //informa a página atual
-	Total_pages    int64 `json:"total_pages"`  //informa a quantidade de páginas
+	Total        int64 `json:"total"`        //total de itens cadastrados
+	Current_page int64 `json:"current_page"` //informa a página atual
+	Total_pages  int64 `json:"total_pages"`  //informa a quantidade de páginas
 }
 
 type Response struct {

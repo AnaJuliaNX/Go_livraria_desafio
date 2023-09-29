@@ -2,6 +2,7 @@ package biblioteca
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/AnaJuliaNX/desafio2/dados"
 )
@@ -9,7 +10,7 @@ import (
 // Função com finalidade de reduzi a repetição do mesmo comando em vários arquivos
 // Essa função vai buscar e exibir todos os livros que tenho previamente cadastrados no banco
 // Os livros serão exibidos em páginas contendo 15 itens em cada uma pra não sobrecarregar meu banco
-func BuscandoOSLivros(offset int) ([]dados.Livro, error) {
+func BuscandoOSLivros(search string, offset int) ([]dados.Livro, error) {
 
 	//Chamo a função que faz a conexão com o banco de dados (mais detalhes no arquivo "comandosBancoeErro")
 	db, erro := ConectandoNoBanco()
@@ -22,8 +23,9 @@ func BuscandoOSLivros(offset int) ([]dados.Livro, error) {
 	limit := 15
 	//Seleciono a minha tabela de livros cadastrado no banco e pego todos os dados ordenando pelo id
 	//até o tanto que o limit permite
-	linhas, erro := db.Query("select id, titulo, autor, estoque from livro_cadastrado order by id limit ? offset ?", limit, offset)
+	linhas, erro := db.Query("select id, titulo, autor, estoque from livro_cadastrado where (titulo like ? or autor like ?) order by id limit ? offset ?", "%"+search+"%", "%"+search+"%", limit, offset)
 	if erro != nil {
+		fmt.Println(erro)
 		return nil, errors.New("erro ao buscar os livros")
 	}
 	defer linhas.Close()

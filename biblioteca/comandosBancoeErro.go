@@ -36,13 +36,16 @@ func Paginacao(totalDeDados int64, dadosDoRetorno interface{}) dados.Response {
 
 	var meta dados.Meta
 	meta.Current_page = 1 //Página atual
-	meta.Total_De_Itens = totalDeDados
+	meta.Total = totalDeDados
 
 	totalDePaginas := totalDeDados / 15 //Total de páginas que tenho
 	if totalDePaginas > 0 {
 		meta.Total_pages = int64(math.Round(float64(totalDePaginas)))
-	}
 
+	}
+	if meta.Total != 0 && meta.Total_pages == 0 {
+		meta.Total_pages = 1
+	}
 	var response dados.Response
 	response.Data = dadosDoRetorno
 	response.Meta = meta

@@ -8,7 +8,7 @@ import (
 
 // função com finalidade de reduzi a repetição do mesmo comando em vários arquivos
 // Essa função vai buscar os dados de todos os usuários que tenho no banco e trazer para mim
-func BuscandoOSUsuarios(offset int) ([]dados.Usuario, error) {
+func BuscandoOSUsuarios(search string, offset int) ([]dados.Usuario, error) {
 
 	//Função que faz a conexão com o banco de dados (mais detalhes no arquivo "comandosBancoeErro")
 	db, erro := ConectandoNoBanco()
@@ -22,7 +22,7 @@ func BuscandoOSUsuarios(offset int) ([]dados.Usuario, error) {
 	//Busco a quantidade de usuários ordenados pelo id que o limite permite
 	//e uso o offset para saber por qual id devo começar
 	//Ou no caso de página 2 uso o offset para saber por qual id devo continuar
-	linhas, erro := db.Query("select id, nome from usuario order by id limit ? offset ?", limit, offset)
+	linhas, erro := db.Query("select id, nome from usuario where nome like ? order by id limit ? offset ?", "%"+search+"%", limit, offset)
 	if erro != nil {
 		return nil, errors.New("erro ao buscar os usuários")
 	}

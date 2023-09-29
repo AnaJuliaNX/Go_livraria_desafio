@@ -9,6 +9,7 @@ import (
 // Essa função serve para listar todos os usuários do banco de dados previamente cadastrados
 func ListarOsUsuarios(w http.ResponseWriter, r *http.Request) {
 
+	search := r.URL.Query().Get("search")
 	//Explicação completa no arquivo "informacoes"
 	pagAtual := r.URL.Query().Get("page")
 	//Coverto o meu parametro de string pra int
@@ -20,7 +21,7 @@ func ListarOsUsuarios(w http.ResponseWriter, r *http.Request) {
 	offset := limit * (page - 1)
 
 	//Função que vai executar toda a busca dos usuários no banco (mais informações no arquivo "comandosOutros")
-	usuarios, erro := BuscandoOSUsuarios(offset)
+	usuarios, erro := BuscandoOSUsuarios(search, offset)
 	if erro != nil {
 		TratandoErros(w, erro.Error(), 422)
 		return
@@ -35,7 +36,7 @@ func ListarOsUsuarios(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	//Selecioso apenas os id da tabela de usuários e conto quantos tem
-	linhas, erro := db.Query("select count(id) from usuario")
+	linhas, erro := db.Query("select count(id) from usuario where nome like ?", "%"+search+"%")
 	if erro != nil {
 		TratandoErros(w, "Erro ao fazer a contagem", 422)
 		return

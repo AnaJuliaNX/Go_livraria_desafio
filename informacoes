@@ -6,7 +6,7 @@
 // 	if erro != nil {
 // 		page = 1 
 // 	}
-// 	limit := 3
+// 	limit := 15
 // 	offset := limit * (page - 1)
 
 L.4 pagAtual: vai pegar dentro da minha URL que solicita a funcionalidade os dados da string page
@@ -25,7 +25,7 @@ L.10 offset: vai dizer por qual elemento deve começar a fazer a busca em cada p
 L.22 page: representa o número da minha página atual 
 L.22 limit: representa a quantidade de itens que quero exibir por página 
 L.23 (page - 1): subtrai um número da minha página atual, é necessário porque as páginas geralmente começam 
-sua contagem em 1 mas os indices em gomeçam a contagem em 0 e assim obtenho o indice da página correto
+sua contagem em 1 mas os indices em go começam a contagem em 0 e assim obtenho o indice da página correto
 
 
 //   linhas, erro := db.Query("select id, nome from usuario order by id limit ? offset ?", limit, offset)
@@ -34,6 +34,8 @@ sua contagem em 1 mas os indices em gomeçam a contagem em 0 e assim obtenho o i
 // 	}
 // 	defer linhas.Close()
 
-linhas, erro: executo todos os comando nas linhas da tabela em questão e faço o tratamento do erro 
-No select seleciono todos os dados cadastrados no banco e ordenos eles pelo id dando um limite de 15 usuários
-por cada seleção e começando pelo de id 1, na segunda página começo pelo de id 16 e assim por diante 
+L.31 linhas, erro: executo todos os comando nas linhas da tabela em questão
+L.31 No select seleciono todos os dados cadastrados no banco e ordenos eles pelo id dando um limite de 15 
+usuários por cada seleção e começando pelo de id 1, na segunda página começo pelo de id 16 e assim por diante 
+L.33 Retorno nada e uma mensagem de erro caso tenha ocorrrido algum erro
+L.35 Fecho a execução da query assim que acabar de fazer tudo que preciso dentro da tabela

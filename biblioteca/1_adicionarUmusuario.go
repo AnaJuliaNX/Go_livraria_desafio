@@ -48,7 +48,6 @@ func AdicionarUsuario(w http.ResponseWriter, r *http.Request) {
 	//Executo o satement, ou seja, salvo os dados inseridos na parte escolhida
 	inserir, erro := statement.Exec(usuario.Nome)
 	if erro != nil {
-		fmt.Println(erro, 1)
 		TratandoErros(w, "Erro ao executar o statmente", 422)
 		return
 	}

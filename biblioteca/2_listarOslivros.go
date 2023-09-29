@@ -11,7 +11,9 @@ import (
 // Eles serão listados de 15 em 15 separados por páginas
 func ListarOsLivros(w http.ResponseWriter, r *http.Request) {
 
-	//Explicação completa no arquivo "iformacoes"
+	search := r.URL.Query().Get("search")
+
+	//Explicação completa no arquivo "informacoes"
 	pagAtual := r.URL.Query().Get("page")
 	//Converto o parametro de string pra int
 	page, erro := strconv.Atoi(pagAtual)
@@ -22,7 +24,7 @@ func ListarOsLivros(w http.ResponseWriter, r *http.Request) {
 	offset := limit * (page - 1)
 
 	//Chamo a minha função que vai realizar toda a parte de buscar os livros até o limite permitido
-	livros, erro := BuscandoOSLivros(offset)
+	livros, erro := BuscandoOSLivros(search, offset)
 	if erro != nil {
 		TratandoErros(w, erro.Error(), 422)
 		return
@@ -37,8 +39,9 @@ func ListarOsLivros(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	//Selecioso da tabela livro_cadastrado os Id de todos os livros e somo eles
-	linhas, erro := db.Query("select count(id) from livro_cadastrado")
+	linhas, erro := db.Query("select count(id) from livro_cadastrado where (titulo like ? or autor like ?)", "%"+search+"%", "%"+search+"%")
 	if erro != nil {
+		fmt.Println(erro)
 		TratandoErros(w, "Erro ao fazer a contagem dos livros", 422)
 		return
 	}
@@ -56,7 +59,6 @@ func ListarOsLivros(w http.ResponseWriter, r *http.Request) {
 
 	//Se o total de livros encontrado for igual a 0 exibo o erro
 	if totalDeLivros == 0 {
-		fmt.Println(erro)
 		TratandoErros(w, "Nenhum livro encontrado", 404)
 		return
 	}

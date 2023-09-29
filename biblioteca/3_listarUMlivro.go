@@ -2,7 +2,6 @@ package biblioteca
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -17,7 +16,6 @@ func ListarUMLivro(w http.ResponseWriter, r *http.Request) {
 	//Converto o meu parametro de string para int
 	ID, erro := strconv.ParseInt(parametros["id"], 10, 32)
 	if erro != nil {
-		fmt.Println(erro, 1)
 		TratandoErros(w, "Erro ao converter o parametro para int", 422)
 		return
 	}
@@ -25,7 +23,6 @@ func ListarUMLivro(w http.ResponseWriter, r *http.Request) {
 	//Função de buscar um livro pelo ID selecionado (mais detalhes sobre no aquivo "comandosParaLivros")
 	livroencontrado, erro := BuscandoUMLivro(int(ID))
 	if erro != nil {
-		fmt.Println(erro, 1)
 		TratandoErros(w, "Erro ao converter o parametro para int", 422)
 		return
 	}
