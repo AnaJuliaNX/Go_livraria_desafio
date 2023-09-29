@@ -8,7 +8,8 @@ import (
 
 // Função com finalidade de reduzi a repetição do mesmo comando em vários arquivos
 // Essa função vai buscar e exibir todos os livros que tenho previamente cadastrados no banco
-func BuscandoOSLivros() ([]dados.Livro, error) {
+// Os livros serão exibidos em páginas contendo 15 itens em cada uma pra não sobrecarregar meu banco
+func BuscandoOSLivros(offset int) ([]dados.Livro, error) {
 
 	//Chamo a função que faz a conexão com o banco de dados (mais detalhes no arquivo "comandosBancoeErro")
 	db, erro := ConectandoNoBanco()
@@ -17,8 +18,11 @@ func BuscandoOSLivros() ([]dados.Livro, error) {
 	}
 	defer db.Close()
 
-	//Seleciono a minha tabela de livros cadastrado no banco de dados e pego todos os livros
-	linhas, erro := db.Query("select * from livro_cadastrado")
+	//Limito a quantidade de livros que vou receber por busca no banco
+	limit := 15
+	//Seleciono a minha tabela de livros cadastrado no banco e pego todos os dados ordenando pelo id
+	//até o tanto que o limit permite
+	linhas, erro := db.Query("select id, titulo, autor, estoque from livro_cadastrado order by id limit ? offset ?", limit, offset)
 	if erro != nil {
 		return nil, errors.New("erro ao buscar os livros")
 	}
@@ -26,15 +30,17 @@ func BuscandoOSLivros() ([]dados.Livro, error) {
 
 	//Escaneio todos os dados sobre os livros que foram encontrados no banco
 	var livros []dados.Livro
+	var livro dados.Livro
 	for linhas.Next() {
-		var livro dados.Livro
-
-		if erro := linhas.Scan(&livro.ID, &livro.Titulo, &livro.Autor, &livro.Estoque); erro != nil {
+		//Escaneio todas as linhas buscando os dados dos livros, tais como ID, titulo, autor e estoque
+		erro := linhas.Scan(&livro.ID, &livro.Titulo, &livro.Autor, &livro.Estoque)
+		if erro != nil {
 			return nil, errors.New("erro ao escanear os livros")
 		}
 
 		livros = append(livros, livro)
 	}
+	//No fim retorno todos os dados dos livros que fiz o scan
 	return livros, nil
 }
 
@@ -50,7 +56,7 @@ func BuscandoUMLivro(ID int) (dados.Livro, error) {
 	defer db.Close()
 
 	//Seleciono a minha tabela de livros cadastrado no banco de dados e busco pelo ID especifico
-	linhas, erro := db.Query("select * from livro_cadastrado where id = ?", ID)
+	linhas, erro := db.Query("select id, titulo, autor, estoque from livro_cadastrado where id = ?", ID)
 	if erro != nil {
 		return dados.Livro{}, errors.New("erro ao buscar o livro")
 	}

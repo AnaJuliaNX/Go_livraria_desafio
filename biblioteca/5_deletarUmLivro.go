@@ -34,7 +34,8 @@ func DeletarUMLivro(w http.ResponseWriter, r *http.Request) {
 	defer statement.Close()
 
 	//Executo o statement e excluo o livro
-	if _, erro := statement.Exec(ID); erro != nil {
+	_, erro = statement.Exec(ID)
+	if erro != nil {
 		TratandoErros(w, "Erro ao executar o statement e deletar o livro", 422)
 		return
 	}

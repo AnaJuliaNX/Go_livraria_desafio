@@ -13,7 +13,8 @@ func ConectarNoBanco() (*sql.DB, error) {
 	if erro != nil {
 		return nil, erro
 	}
-	if erro = db.Ping(); erro != nil {
+	erro = db.Ping()
+	if erro != nil {
 		return nil, erro
 	}
 	return db, nil

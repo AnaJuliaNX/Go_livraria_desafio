@@ -15,8 +15,10 @@ import (
 // ele vai exibir um código de status e uma mensagem personalizada escrita por mim
 func TratandoErros(w http.ResponseWriter, message string, statuscode int) {
 
-	w.WriteHeader(statuscode)
-	w.Write([]byte(message))
+	//acima de 200: informa que está ok / acima de 300: redirecionando para outro lugar
+	//acima de 400: informando um erro da parte do usuário, front / acima de 500: erro do servidor
+	w.WriteHeader(statuscode) //definindo o status
+	w.Write([]byte(message))  //transformando minha msg em slice of bytes
 }
 
 // Função com finalidade de reduzi a repetição do mesmo comando em vários arquivos
@@ -33,11 +35,10 @@ func ConectandoNoBanco() (*sql.DB, error) {
 func Paginacao(totalDeDados int64, dadosDoRetorno interface{}) dados.Response {
 
 	var meta dados.Meta
-	meta.Total_pages = 1
-	meta.Current_page = 1
-	meta.Total = totalDeDados
+	meta.Current_page = 1 //Página atual
+	meta.Total_De_Itens = totalDeDados
 
-	totalDePaginas := totalDeDados / 15
+	totalDePaginas := totalDeDados / 15 //Total de páginas que tenho
 	if totalDePaginas > 0 {
 		meta.Total_pages = int64(math.Round(float64(totalDePaginas)))
 	}

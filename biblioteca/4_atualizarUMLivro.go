@@ -57,7 +57,8 @@ func AtualizarUMLivro(w http.ResponseWriter, r *http.Request) {
 	defer statement.Close()
 
 	//Executo o statement e faço a atualização/alteração dos dados
-	if _, erro := statement.Exec(livro.Titulo, livro.Autor, ID); erro != nil {
+	_, erro = statement.Exec(livro.Titulo, livro.Autor, ID)
+	if erro != nil {
 		fmt.Println(erro, 1)
 		TratandoErros(w, "Erro ao atualizar o livro", 422)
 		return

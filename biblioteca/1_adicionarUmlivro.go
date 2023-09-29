@@ -10,6 +10,8 @@ import (
 )
 
 // Função com finalidade de cadastrar um livro novo no banco de dados
+// w: write, ou seja o que vou escrever pro usuário
+// r: request, ou seja, o que vou receber do usuário/postman, etc
 func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 
 	//Faço a leitura de todo o conteúdo do corpo, ou seja, os dados escritos pelo funcionário da biblioteca
@@ -21,7 +23,8 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 
 	//Essa função faz com que eu converta de json para struct, ou seja, volto para os padrões da linguagem de go
 	var livro dados.Livro
-	if erro = json.Unmarshal(corpoDaRequisicao, &livro); erro != nil {
+	erro = json.Unmarshal(corpoDaRequisicao, &livro)
+	if erro != nil {
 		TratandoErros(w, "Erro ao converter de json para struct", 422)
 		return
 	}
@@ -49,7 +52,7 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Vai retorna um novo Id onde salvei esse livro e por meio dele que vou pode pesquisar o livro depois
+	//Vai retorna o Id do livro que acabei de adicionar e por meio dele que vou pode pesquisar o livro depois
 	_, erro = inserir.LastInsertId()
 	if erro != nil {
 		TratandoErros(w, "Erro ao obter o ID inserido", 422)

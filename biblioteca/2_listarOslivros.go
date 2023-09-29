@@ -4,13 +4,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 // Essa função serve para listar todos os livros previamente cadastrados que estão salvos no banco de dados
+// Eles serão listados de 15 em 15 separados por páginas
 func ListarOsLivros(w http.ResponseWriter, r *http.Request) {
 
-	//Chamo a minha função que vai realizar toda a parte de buscar os livros
-	livros, erro := BuscandoOSLivros()
+	//Explicação completa no arquivo "iformacoes"
+	pagAtual := r.URL.Query().Get("page")
+	//Converto o parametro de string pra int
+	page, erro := strconv.Atoi(pagAtual)
+	if erro != nil {
+		page = 1 //se não tiver nenhum parametro ou ele estiver em branco concluo que é a pag 1
+	}
+	limit := 15 //limito a quantidade de itens que serão buscados e exibidos
+	offset := limit * (page - 1)
+
+	//Chamo a minha função que vai realizar toda a parte de buscar os livros até o limite permitido
+	livros, erro := BuscandoOSLivros(offset)
 	if erro != nil {
 		TratandoErros(w, erro.Error(), 422)
 		return
@@ -32,7 +44,7 @@ func ListarOsLivros(w http.ResponseWriter, r *http.Request) {
 	}
 	defer linhas.Close()
 
-	//Faço o scan do total de livros encontrados pelo id
+	//Faço o scan do total de livros
 	var totalDeLivros int64
 	if linhas.Next() {
 		erro := linhas.Scan(&totalDeLivros)
@@ -51,19 +63,7 @@ func ListarOsLivros(w http.ResponseWriter, r *http.Request) {
 
 	//Executo a função Paginacao (mais informações em "comandosBancoeErro")
 	response := Paginacao(totalDeLivros, livros)
-
-	limit := 3
-	pagAtual := r.URL.Query().Get("page")
-
-	offset := limit * (pagAtual - 1)
-
-	linhas1, erro := db.Query("select * from livro_cadastrado order by id limit ? offset ?", limit, offset)
-	if erro != nil {
-		fmt.Println(erro)
-		TratandoErros(w, "Erro ao buscar 15 livros", 422)
-		return
-	}
-	defer linhas1.Close()
+	response.Meta.Current_page = int64(page) //em cada página ele vai exibir em qual página está
 
 	//Se não houve nenhum erro durante a execução até aqui finalizo transformando os dados recebeidos em json
 	erro = json.NewEncoder(w).Encode(response)
