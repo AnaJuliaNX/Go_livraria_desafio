@@ -32,6 +32,7 @@ func ConectandoNoBanco() (*sql.DB, error) {
 	return db, nil
 }
 
+// Função com finalidade de reduzi a repetição do mesmo comando em vários arquivos
 func Paginacao(totalDeDados int64, dadosDoRetorno interface{}) dados.Response {
 
 	var meta dados.Meta

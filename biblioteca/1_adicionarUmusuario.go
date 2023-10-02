@@ -28,6 +28,16 @@ func AdicionarUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	limiteDeCaracter := 20
+	if len(usuario.Nome) > limiteDeCaracter {
+		TratandoErros(w, "Limite de caracteres superior a vinte (20) no campo de nome", 422)
+		return
+	}
+
+	if usuario.Nome == "" {
+		TratandoErros(w, "O campo nome não pode estar vazio", 422)
+		return
+	}
 	//Executo a função que vai fazer a conexão com o banco (mais informações no arquivo "comandosBancoErro")
 	db, erro := banco.ConectarNoBanco()
 	if erro != nil {
