@@ -2,6 +2,7 @@ package biblioteca
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"math"
 	"net/http"
@@ -17,8 +18,21 @@ func TratandoErros(w http.ResponseWriter, message string, statuscode int) {
 
 	//acima de 200: informa que está ok / acima de 300: redirecionando para outro lugar
 	//acima de 400: informando um erro da parte do usuário, front / acima de 500: erro do servidor
+	var dataMessage dados.DataMessageError
+	dataMessage.Message = message
+	dataMessage.Code = int64(statuscode)
+
+	var data dados.ResponseError
+	data.Data = dataMessage
+
+	messagem, erro := json.Marshal(data)
+	if erro != nil {
+		w.WriteHeader(422)            //definindo o status
+		w.Write([]byte(erro.Error())) //transformando minha msg em slice of bytes
+		return
+	}
 	w.WriteHeader(statuscode) //definindo o status
-	w.Write([]byte(message))  //transformando minha msg em slice of bytes
+	w.Write(messagem)         //transformando minha msg em slice of bytes
 }
 
 // Função com finalidade de reduzi a repetição do mesmo comando em vários arquivos
@@ -36,8 +50,8 @@ func ConectandoNoBanco() (*sql.DB, error) {
 func Paginacao(totalDeDados int64, dadosDoRetorno interface{}) dados.Response {
 
 	var meta dados.Meta
-	meta.Current_page = 1 //Página atual
-	meta.Total = totalDeDados
+	meta.Current_page = 1     //Página atual
+	meta.Total = totalDeDados //Literalmente total de páginas
 
 	totalDePaginas := totalDeDados / 15 //Total de páginas que tenho
 	if totalDePaginas > 0 {

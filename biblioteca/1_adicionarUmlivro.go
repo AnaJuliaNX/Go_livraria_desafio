@@ -11,14 +11,8 @@ import (
 	"github.com/AnaJuliaNX/desafio2/dados"
 )
 
-// Função para fazer a verificação dos dados inseridos
-func verificaDados() {
-	var body map[string]interface{}
-
-}
-
 // Função com finalidade de cadastrar um livro novo no banco de dados
-// w: write, ou seja o que vou escrever pro usuário
+// w: write, ou seja, o que vou escrever pro usuário
 // r: request, ou seja, o que vou receber do usuário/postman, etc
 func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 
@@ -29,53 +23,53 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Essa função faz com que eu converta de json para struct, ou seja, volto para os padrões de go
 	var body map[string]interface{}
-	//Verifica se os campos autor e titulo foram preenchidos, exibe uma mensagem de erro caso estejam vazios
-	if body["titulo"] == "" || body["autor"] == "" {
-		fmt.Println(body["titulo"])
-		TratandoErros(w, "Os campos de titulo e/ou autor não podem estar em branco", 422)
+	erro = json.Unmarshal(corpoDaRequisicao, &body)
+	if erro != nil {
+		fmt.Println(erro)
+		TratandoErros(w, "Erro ao converter de json para struct", 422)
 		return
 	}
-
-	//Limita o tanto de caracteres que podem ser inseridos e exibe uma mensagem de erro caso ultrapasse
-	//limiteDeCaracter := 20
-
-	titulo, ok := body["titulo"].(string)
-	if !ok {
-		fmt.Println(len(titulo))
-		TratandoErros(w, "O campo titulo deve ser preenchido com caracteres", 422)
+	//Verifica se o campo titulo foi preenchido, exibe uma mensagem de erro caso esteja vazio
+	if body["titulo"] == nil {
+		TratandoErros(w, "O campo titulo é obrigatório", 422)
 		return
 	}
-	autor, ok := body["autor"].(string)
-	if !ok {
-		TratandoErros(w, "No campo autor é permitido apenas caracteres", 422)
+	//Verifico se o que foi digitado é uma string, se não for exibo a mensagem de erro
+	if reflect.TypeOf(body["titulo"]).Kind() != reflect.String {
+		TratandoErros(w, "Titulo inválido", 422)
 		return
 	}
-
-	fmt.Println(len(titulo), len(autor))
-	// if len(titulo) > limiteDeCaracter || len(autor) > limiteDeCaracter {
-	// 	TratandoErros(w, "Limite de caracateres superior a vinte (20) no campo de titulo e/ou autor", 422)
-	// 	return
-	// }
-
+	//Verifica se o titulo foi deixado em branco, se foi exibo a mensagem de erro
+	if body["titulo"].(string) == "" {
+		TratandoErros(w, "O campo titulo é obrigatório", 422)
+		return
+	}
+	//Verifica se o campo autor foi preenchido, exibe uma mensagem de erro caso esteja vazio
+	if body["autor"] == nil || body["autor"] == "" {
+		TratandoErros(w, "O campo autor é obrigatório", 422)
+		return
+	}
+	//verifica se o titulo ou o autor atingiram o limite de caracteres, se sim exibe a mensagem de erro
+	limiteDeCaracter := 20
+	if len(body["titulo"].(string)) > limiteDeCaracter || len(body["autor"].(string)) > limiteDeCaracter {
+		TratandoErros(w, "Limite de caracteres atingido", 422)
+		return
+	}
+	//Verifica se o campo estoque foi preenchido, se não exibe a mensagem de erro
+	if body["estoque"] == nil {
+		TratandoErros(w, "O campo estoque é obrigatório", 422)
+		return
+	}
 	//Verifica se o que estou inserindo no estoque é um número, se não for ele exibe a msg de erro
 	if reflect.TypeOf(body["estoque"]).Kind() != reflect.Float64 {
 		TratandoErros(w, "No campo de estoque são aceitos apenas números", 422)
 		return
 	}
-
-	//Verifico se o estoque inserido é zero ou nulo, se for exibo a mensagem de erro
-	if body["estoque"] == 0 {
-		TratandoErros(w, "O estoque não pode ser zero ou nulo", 422)
-		return
-	}
-
-	//Essa função faz com que eu converta de json para struct, ou seja, volto para os padrões da linguagem de go
-	var livro dados.Livro
-	erro = json.Unmarshal(corpoDaRequisicao, &body)
-	if erro != nil {
-		fmt.Println(erro)
-		TratandoErros(w, "Erro ao converter de json para struct", 422)
+	//Verifico se o estoque inserido é zero, se for exibo a mensagem de erro
+	if body["estoque"].(float64) == 0 {
+		TratandoErros(w, "O estoque não pode ser zero", 422)
 		return
 	}
 
@@ -95,6 +89,7 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 	}
 	defer statement.Close()
 
+	var livro dados.Livro
 	//Executo a solicitação feita acima para salvar os dados do novo livro cadastrado
 	inserir, erro := statement.Exec(livro.Titulo, livro.Autor, livro.Estoque)
 	if erro != nil {
@@ -102,7 +97,7 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Vai retorna o Id do livro que acabei de adicionar e por meio dele que vou pode pesquisar o livro depois
+	//Vai retorna o Id do livro que acabei de adicionar e por meio dele que vou poder pesquisar o livro depois
 	_, erro = inserir.LastInsertId()
 	if erro != nil {
 		TratandoErros(w, "Erro ao obter o ID inserido", 422)
@@ -111,5 +106,4 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 
 	//Se nao houve nenhum erro durante a execução do código exibo essa mensagem no final
 	TratandoErros(w, "Livro adicionado com sucesso", 200)
-	return
 }

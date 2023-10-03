@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/AnaJuliaNX/desafio2/dados"
 	"github.com/gorilla/mux"
 )
 
@@ -26,18 +27,20 @@ func ListarUMUsuario(w http.ResponseWriter, r *http.Request) {
 		TratandoErros(w, "Erro ao buscar o ID do usuario", 422)
 		return
 	}
+	//Caso na busca não encontre nenhum usuário exibo isso, usuários não cadastrados tem id 0
 	if usuariobuscado.ID == 0 {
 		TratandoErros(w, "Usuário não encontrado", 404)
 	} else {
+
+		//Deixo dentro de um dsata tudo que será exibido, forma padronizada
+		var dadosUsuario dados.DataUsuario
+		dadosUsuario.Data = usuariobuscado
 		//Altero os dados recebidos de struct para json, facilitado para outras linguagens
-		erro = json.NewEncoder(w).Encode(usuariobuscado)
+		erro = json.NewEncoder(w).Encode(dadosUsuario)
 		if erro != nil {
 			TratandoErros(w, "Erro ao converter para json", 422)
 			return
 		}
 	}
 
-	//Se não houve nenhum erro durante a execução do código exibo essa mensagem no final
-	//TratandoErros(w, "Usuário buscado com sucesso", 200)
-	//return
 }

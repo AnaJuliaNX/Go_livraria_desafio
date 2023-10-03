@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/AnaJuliaNX/desafio2/dados"
 	"github.com/gorilla/mux"
 )
 
@@ -27,12 +28,17 @@ func ListarUMLivro(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Trato o erro caso a busca me dê um livro não cadastrado, livros não cadastrados apresentam id 0
 	if livroencontrado.ID == 0 {
 		TratandoErros(w, "Livro não cadastrado", 404)
 		return
 	}
+	//Coloco todos os dados dentro do data para que fique padronizado
+	var dadosLivro dados.DataLivros
+	dadosLivro.Data = livroencontrado
 
-	erro = json.NewEncoder(w).Encode(livroencontrado)
+	//Transformo em struct para que fique legivel
+	erro = json.NewEncoder(w).Encode(dadosLivro)
 	if erro != nil {
 		TratandoErros(w, "Erro ao converter para json", 422)
 		return

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 
 	"github.com/AnaJuliaNX/desafio2/banco"
 	"github.com/AnaJuliaNX/desafio2/dados"
@@ -20,24 +21,36 @@ func AdicionarUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var body map[string]interface{}
 	//Converto de json para struct, ou seja, de um jeito que seja legivel para o Go
-	var usuario dados.Usuario
-	if erro = json.Unmarshal(corpoDaRequisicao, &usuario); erro != nil {
+	if erro = json.Unmarshal(corpoDaRequisicao, &body); erro != nil {
 		fmt.Println(erro, 1)
 		TratandoErros(w, "Erro ao converter de json para struct", 422)
 		return
 	}
 
+	//Verifica se o campo nome foi preenchido, exibe uma mensagem de erro caso esteja vazio
+	if body["nome"] == nil {
+		TratandoErros(w, "O campo nome é obrigatório", 422)
+		return
+	}
+	//verifico se o que foi digitado é uma string, se não for exibo a mensagem
+	if reflect.TypeOf(body["nome"]).Kind() != reflect.String {
+		TratandoErros(w, "Nome inválido", 422)
+		return
+	}
+	//Se o campo do nome estiver vazio exibo a mensagem de erro
+	if body["nome"] == "" {
+		TratandoErros(w, "O campo nome não pode estar vazio", 422)
+		return
+	}
+	//Limito o tanto de carcteres para 20 e se atingir exibe a mensagem de erro
 	limiteDeCaracter := 20
-	if len(usuario.Nome) > limiteDeCaracter {
+	if len(body["nome"].(string)) > limiteDeCaracter {
 		TratandoErros(w, "Limite de caracteres superior a vinte (20) no campo de nome", 422)
 		return
 	}
 
-	if usuario.Nome == "" {
-		TratandoErros(w, "O campo nome não pode estar vazio", 422)
-		return
-	}
 	//Executo a função que vai fazer a conexão com o banco (mais informações no arquivo "comandosBancoErro")
 	db, erro := banco.ConectarNoBanco()
 	if erro != nil {
@@ -55,6 +68,7 @@ func AdicionarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 	defer statement.Close()
 
+	var usuario dados.Usuario
 	//Executo o satement, ou seja, salvo os dados inseridos na parte escolhida
 	inserir, erro := statement.Exec(usuario.Nome)
 	if erro != nil {
@@ -71,5 +85,4 @@ func AdicionarUsuario(w http.ResponseWriter, r *http.Request) {
 
 	//Se não houve nenhum erro durante a execução do código exibo essa mensagem no final
 	TratandoErros(w, "Usuário adicionado com sucesso", 200)
-	return
 }
