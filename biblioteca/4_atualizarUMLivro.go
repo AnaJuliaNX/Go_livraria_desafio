@@ -40,6 +40,28 @@ func AtualizarUMLivro(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if livro.Titulo == "" {
+		TratandoErros(w, "O titulo não pode estar em branco", 422)
+		return
+	}
+	if len(livro.Titulo) > 20 {
+		TratandoErros(w, "O titulo não pode ter mais que vinte(20) caracteres", 422)
+		return
+	}
+
+	if livro.ID == 0 {
+		TratandoErros(w, "Livro não cadastrado", 422)
+		return
+	}
+	if livro.Autor == "" {
+		TratandoErros(w, "O autor não pode estar em branco", 422)
+		return
+	}
+	if len(livro.Autor) > 20 {
+		TratandoErros(w, "O autor não pode ter mais que vinte(20) caracteres", 422)
+		return
+	}
+
 	//Executo a função que vai fazer a conexão com o banco (mais informações no arquivo "comandosBancoErro")
 	db, erro := banco.ConectarNoBanco()
 	if erro != nil {

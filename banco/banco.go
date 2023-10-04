@@ -7,7 +7,7 @@ import (
 )
 
 func ConectarNoBanco() (*sql.DB, error) {
-	stringdeconexao := "funcionario:trabalho@/biblioteca?charset=utf8&parseTime=True&loc=Local"
+	stringdeconexao := "funcionario:trabalho@/livraria?charset=utf8&parseTime=True&loc=Local"
 
 	db, erro := sql.Open("mysql", stringdeconexao)
 	if erro != nil {

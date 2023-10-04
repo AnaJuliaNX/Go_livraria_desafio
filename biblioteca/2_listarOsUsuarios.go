@@ -17,7 +17,7 @@ func ListarOsUsuarios(w http.ResponseWriter, r *http.Request) {
 	if erro != nil {
 		page = 1 //se o parametro estiver vazio ou faltando conclui que é a pag 1
 	}
-	limit := 3 //limito a quantidade que vou buscar e exibir
+	limit := 15 //limito a quantidade que vou buscar e exibir
 	offset := limit * (page - 1)
 
 	//Função que vai executar toda a busca dos usuários no banco (mais informações no arquivo "comandosOutros")

@@ -8,7 +8,7 @@ import (
 	"reflect"
 
 	"github.com/AnaJuliaNX/desafio2/banco"
-	"github.com/AnaJuliaNX/desafio2/dados"
+	//"github.com/AnaJuliaNX/desafio2/dados"
 )
 
 // Função com finalidade de cadastrar um livro novo no banco de dados
@@ -54,6 +54,7 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 	//verifica se o titulo ou o autor atingiram o limite de caracteres, se sim exibe a mensagem de erro
 	limiteDeCaracter := 20
 	if len(body["titulo"].(string)) > limiteDeCaracter || len(body["autor"].(string)) > limiteDeCaracter {
+		fmt.Println(body["titulo"], body["autor"])
 		TratandoErros(w, "Limite de caracteres atingido", 422)
 		return
 	}
@@ -89,9 +90,9 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 	}
 	defer statement.Close()
 
-	var livro dados.Livro
+	//var livro dados.Livro
 	//Executo a solicitação feita acima para salvar os dados do novo livro cadastrado
-	inserir, erro := statement.Exec(livro.Titulo, livro.Autor, livro.Estoque)
+	inserir, erro := statement.Exec(body["titulo"], body["autor"], body["estoque"])
 	if erro != nil {
 		TratandoErros(w, "Erro ao executar o statment", 422)
 		return

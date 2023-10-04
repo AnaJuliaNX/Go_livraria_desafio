@@ -18,7 +18,7 @@ func BuscandoOSUsuarios(search string, offset int) ([]dados.Usuario, error) {
 	defer db.Close()
 
 	//dou um limite de três usuários por página
-	limit := 3
+	limit := 15
 	//Busco a quantidade de usuários ordenados pelo id que o limite permite
 	//e uso o offset para saber por qual id devo começar
 	//Ou no caso de página 2 uso o offset para saber por qual id devo continuar

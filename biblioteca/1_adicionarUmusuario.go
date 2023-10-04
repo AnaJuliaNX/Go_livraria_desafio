@@ -8,7 +8,6 @@ import (
 	"reflect"
 
 	"github.com/AnaJuliaNX/desafio2/banco"
-	"github.com/AnaJuliaNX/desafio2/dados"
 )
 
 // Função para adicionar um novo usuário no banco de dados, especificamente na tabela usuário
@@ -68,9 +67,8 @@ func AdicionarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 	defer statement.Close()
 
-	var usuario dados.Usuario
 	//Executo o satement, ou seja, salvo os dados inseridos na parte escolhida
-	inserir, erro := statement.Exec(usuario.Nome)
+	inserir, erro := statement.Exec(body["nome"])
 	if erro != nil {
 		TratandoErros(w, "Erro ao executar o statmente", 422)
 		return

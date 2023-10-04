@@ -33,6 +33,10 @@ func DeletarUMLivro(w http.ResponseWriter, r *http.Request) {
 	}
 	defer statement.Close()
 
+	if ID == 0 {
+		TratandoErros(w, "Livro não cadastrado", 422)
+		return
+	}
 	//Executo o statement e excluo o livro
 	_, erro = statement.Exec(ID)
 	if erro != nil {
