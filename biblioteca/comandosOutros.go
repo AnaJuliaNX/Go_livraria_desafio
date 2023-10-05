@@ -70,6 +70,30 @@ func buscandoUMUsuario(ID int) (dados.Usuario, error) {
 	return usuarioencontrado, nil
 }
 
+func BuscandoUMPedido(ID int) (dados.Pedido, error) {
+
+	db, erro := ConectandoNoBanco()
+	if erro != nil {
+		return dados.Pedido{}, erro
+	}
+	defer db.Close()
+
+	linhas, erro := db.Query("select * from pedidos where id = ?", ID)
+	if erro != nil {
+		return dados.Pedido{}, erro
+	}
+	defer linhas.Close()
+
+	var pedidoencontrado dados.Pedido
+	if linhas.Next() {
+		erro := linhas.Scan(&pedidoencontrado.ID, &pedidoencontrado.User_cadastrado)
+		if erro != nil {
+			return dados.Pedido{}, errors.New("erro ao buscar pedido")
+		}
+	}
+	return pedidoencontrado, nil
+}
+
 // Função com finalidade de reduzi a repetição do mesmo comando em vários arquivos
 // Essa função vai fazer a alteração no estoque do livro sempre que eue emprestar ou devolver um
 func AlterarEstoque(ID int, estoque int) error {

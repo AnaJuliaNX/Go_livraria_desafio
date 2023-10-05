@@ -92,14 +92,14 @@ func Devolvendo(w http.ResponseWriter, r *http.Request) {
 
 	//Confiro se o usuário da devolução é o mesmo que fez emprestimo
 	if usuariobuscado.Nome != emprestado.Nome_Usuario {
-		fmt.Println(erro, 1)
-		fmt.Println("As credenciais do usuário são incompativeis")
+		TratandoErros(w, "Emprestimo do usuário não encontrado", 404)
+		return
 	}
 
 	//Confiro se o livro a ser devolvido é o mesmo que foi emprestado
 	if livrobuscado.Titulo != emprestado.Titulo_livro {
-		fmt.Println(erro, 1)
-		fmt.Println("Titulo do livro diferente do emprestado")
+		TratandoErros(w, "Emprestimo do livro não encontrado", 404)
+		return
 	}
 
 	//Data da devolução em tempo real

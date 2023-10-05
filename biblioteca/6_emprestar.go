@@ -64,10 +64,20 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if usuariobuscado.ID == 0 {
+		TratandoErros(w, "Usuário não cadastrado", 404)
+		return
+	}
+
+	if livrobuscado.ID == 0 {
+		TratandoErros(w, "Livro não cadastrado", 404)
+		return
+	}
 	//Aqui executo apenas se o valor que estou querendo for menor que o salvo no estoque
-	//Caso for maior que o que tenho ele vai para o else e da a mensasgem do estoque insuficiente
+	//Caso for maior que o que tenho ele vai para o else e da a mensagem do estoque insuficiente
 	if livrobuscado.Estoque > emprestar.Quantidade {
 		livrobuscado.Estoque = livrobuscado.Estoque - emprestar.Quantidade
+		fmt.Println(emprestar.Quantidade)
 		emprestar.Nome_Usuario = usuariobuscado.Nome
 		emprestar.Titulo_livro = livrobuscado.Titulo
 		emprestar.Data_Emprestimo = time.Now()
@@ -82,7 +92,8 @@ func Emprestando(w http.ResponseWriter, r *http.Request) {
 		//fmt.Println("A taxa cobrada foi de:", emprestar.Taxa_Emprestimo)
 
 	} else {
-		fmt.Println("Estoque insuficiente")
+		TratandoErros(w, "Estoque insuficiente", 422)
+		return
 	}
 
 	//Faço a alteração do estoque

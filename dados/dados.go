@@ -18,7 +18,8 @@ type Livro struct {
 	ID      int    `json:"id"`
 	Titulo  string `json:"titulo"`
 	Autor   string `json:"autor"`
-	Estoque int    `json:"estoque"`
+	Estoque int   `json:"estoque"`
+	Valor float64 `json:"valor"`
 }
 
 // Struct para exibir os dados do livro padronizado em um data
@@ -58,4 +59,16 @@ type DataMessageError struct {
 // Struct para exibir os dados padronizar em um data
 type ResponseError struct {
 	Data DataMessageError `json:"data"`
+}
+
+type Pedido struct {
+	ID int `json:"id"`
+	User_cadastrado string `json:"user_cadastrado"`
+}
+
+type Itens struct {
+	Pedido_feito int `json:"pedido_feito"`
+	Livro_cadastrado string `json:"livro_cadastrado"`
+	Quantidade int `json:"quantidade"`
+	Valor_final float64 `json:"valor_final "`
 }

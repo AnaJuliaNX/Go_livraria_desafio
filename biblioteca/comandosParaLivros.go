@@ -23,7 +23,7 @@ func BuscandoOSLivros(search string, offset int) ([]dados.Livro, error) {
 	limit := 15
 	//Seleciono a minha tabela de livros cadastrado no banco e pego todos os dados ordenando pelo id
 	//até o tanto que o limit permite
-	linhas, erro := db.Query("select id, titulo, autor, estoque from livro_cadastrado where (titulo like ? or autor like ?) order by id limit ? offset ?", "%"+search+"%", "%"+search+"%", limit, offset)
+	linhas, erro := db.Query("select id, titulo, autor, estoque, valor from livro_cadastrado where (titulo like ? or autor like ?) order by id limit ? offset ?", "%"+search+"%", "%"+search+"%", limit, offset)
 	if erro != nil {
 		fmt.Println(erro)
 		return nil, errors.New("erro ao buscar os livros")
@@ -35,8 +35,9 @@ func BuscandoOSLivros(search string, offset int) ([]dados.Livro, error) {
 	var livro dados.Livro
 	for linhas.Next() {
 		//Escaneio todas as linhas buscando os dados dos livros, tais como ID, titulo, autor e estoque
-		erro := linhas.Scan(&livro.ID, &livro.Titulo, &livro.Autor, &livro.Estoque)
+		erro := linhas.Scan(&livro.ID, &livro.Titulo, &livro.Autor, &livro.Estoque, &livro.Valor)
 		if erro != nil {
+			fmt.Println(erro)
 			return nil, errors.New("erro ao escanear os livros")
 		}
 
@@ -58,7 +59,7 @@ func BuscandoUMLivro(ID int) (dados.Livro, error) {
 	defer db.Close()
 
 	//Seleciono a minha tabela de livros cadastrado no banco de dados e busco pelo ID especifico
-	linhas, erro := db.Query("select id, titulo, autor, estoque from livro_cadastrado where id = ?", ID)
+	linhas, erro := db.Query("select id, titulo, autor, estoque, valor from livro_cadastrado where id = ?", ID)
 	if erro != nil {
 		return dados.Livro{}, errors.New("erro ao buscar o livro")
 	}
@@ -67,7 +68,7 @@ func BuscandoUMLivro(ID int) (dados.Livro, error) {
 	//Escaneio todos os dados sobre aquele livro em especifico que foi encontrado no banco
 	var livroencontrado dados.Livro
 	if linhas.Next() {
-		erro := linhas.Scan(&livroencontrado.ID, &livroencontrado.Titulo, &livroencontrado.Autor, &livroencontrado.Estoque)
+		erro := linhas.Scan(&livroencontrado.ID, &livroencontrado.Titulo, &livroencontrado.Autor, &livroencontrado.Estoque, &livroencontrado.Valor)
 		if erro != nil {
 			return dados.Livro{}, errors.New("erro ao escanear o livro")
 		}

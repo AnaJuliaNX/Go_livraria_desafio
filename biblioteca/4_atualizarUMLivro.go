@@ -49,16 +49,17 @@ func AtualizarUMLivro(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if livro.ID == 0 {
-		TratandoErros(w, "Livro não cadastrado", 422)
-		return
-	}
 	if livro.Autor == "" {
 		TratandoErros(w, "O autor não pode estar em branco", 422)
 		return
 	}
 	if len(livro.Autor) > 20 {
 		TratandoErros(w, "O autor não pode ter mais que vinte(20) caracteres", 422)
+		return
+	}
+
+	if livro.Valor == 0 {
+		TratandoErros(w, "O valor não pode ser zero", 422)
 		return
 	}
 
@@ -71,7 +72,7 @@ func AtualizarUMLivro(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	//Crio um statement especificando a tabela do banco e quais dados dela vou alterar
-	statement, erro := db.Prepare("Update livro_cadastrado set titulo = ?, autor = ? where id = ?")
+	statement, erro := db.Prepare("Update livro_cadastrado set titulo = ?, autor = ?, valor = ? where id = ?")
 	if erro != nil {
 		TratandoErros(w, "Erro ao criar o statement", 422)
 		return
@@ -79,7 +80,7 @@ func AtualizarUMLivro(w http.ResponseWriter, r *http.Request) {
 	defer statement.Close()
 
 	//Executo o statement e faço a atualização/alteração dos dados
-	_, erro = statement.Exec(livro.Titulo, livro.Autor, ID)
+	_, erro = statement.Exec(livro.Titulo, livro.Autor, livro.Valor, ID)
 	if erro != nil {
 		fmt.Println(erro, 1)
 		TratandoErros(w, "Erro ao atualizar o livro", 422)
@@ -90,3 +91,4 @@ func AtualizarUMLivro(w http.ResponseWriter, r *http.Request) {
 	TratandoErros(w, "Livro atualizado com sucesso", 200)
 	return
 }
+

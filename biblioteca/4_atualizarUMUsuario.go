@@ -38,16 +38,13 @@ func AtualizarUMUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if usuario.ID == 0 {
-		TratandoErros(w, "Usuário não cadastrado", 422)
-		return
-	}
 	if usuario.Nome == "" {
 		TratandoErros(w, "O nome não pode estar em branco", 422)
 		return
 	}
 	if len(usuario.Nome) > 20 {
-		TratandoErros(w, "O nome não pode ter mais que vinte(20) caracteres", 422)
+		TratandoErros(w, "Limite de vinte(20) caracteres atingido", 422)
+		return
 	}
 
 	//Abro a conexão com o banco para pode fazer a alteração dos dados e eles serem salvos

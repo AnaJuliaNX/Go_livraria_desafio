@@ -41,6 +41,11 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 		TratandoErros(w, "Titulo inválido", 422)
 		return
 	}
+	//Verifico se o que foi digitado é uma string, se não for exibo a mensagem de erro
+	if reflect.TypeOf(body["autor"]).Kind() != reflect.String {
+		TratandoErros(w, "Autor inválido", 422)
+		return
+	}
 	//Verifica se o titulo foi deixado em branco, se foi exibo a mensagem de erro
 	if body["titulo"].(string) == "" {
 		TratandoErros(w, "O campo titulo é obrigatório", 422)
@@ -74,6 +79,19 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if body["valor"] == nil {
+		TratandoErros(w, "O campo valor é obrigátorio", 422)
+		return
+	}
+	if body["valor"].(float64) == 0 {
+		TratandoErros(w, "O valor não pode ser zero", 422)
+		return
+	}
+	if reflect.TypeOf(body["valor"]).Kind() != reflect.Float64 {
+		TratandoErros(w, "No campo valor são aceitos apenas números", 422)
+		return
+	}
+
 	//Executo a função que vai fazer a conexão com o banco (mais informações no arquivo "comandosBancoErro")
 	db, erro := banco.ConectarNoBanco()
 	if erro != nil {
@@ -83,7 +101,7 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	//Prepraro e digo onde vou salvar os dados no banco
-	statement, erro := db.Prepare("Insert into livro_cadastrado(titulo, autor, estoque) values (?, ?, ?)")
+	statement, erro := db.Prepare("Insert into livro_cadastrado(titulo, autor, estoque, valor) values (?, ?, ?, ?)")
 	if erro != nil {
 		TratandoErros(w, "Erro ao criar o statement", 422)
 		return
@@ -92,7 +110,7 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 
 	//var livro dados.Livro
 	//Executo a solicitação feita acima para salvar os dados do novo livro cadastrado
-	inserir, erro := statement.Exec(body["titulo"], body["autor"], body["estoque"])
+	inserir, erro := statement.Exec(body["titulo"], body["autor"], body["estoque"], body["valor"])
 	if erro != nil {
 		TratandoErros(w, "Erro ao executar o statment", 422)
 		return
