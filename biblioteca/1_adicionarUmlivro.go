@@ -8,7 +8,6 @@ import (
 	"reflect"
 
 	"github.com/AnaJuliaNX/desafio2/banco"
-	//"github.com/AnaJuliaNX/desafio2/dados"
 )
 
 // Função com finalidade de cadastrar um livro novo no banco de dados
@@ -79,14 +78,17 @@ func AdiconarUmLivro(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Se não inserir nenhum valor exibe essa mensagem
 	if body["valor"] == nil {
 		TratandoErros(w, "O campo valor é obrigátorio", 422)
 		return
 	}
+	//Se o valor digita for 0 exibe essa mensagem
 	if body["valor"].(float64) == 0 {
 		TratandoErros(w, "O valor não pode ser zero", 422)
 		return
 	}
+	//Se o que foi digitado for diferente de um float64 exibe essa mensagem
 	if reflect.TypeOf(body["valor"]).Kind() != reflect.Float64 {
 		TratandoErros(w, "No campo valor são aceitos apenas números", 422)
 		return
