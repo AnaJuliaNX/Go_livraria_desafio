@@ -69,31 +69,41 @@ func ItemDoPedido(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Quantidade minima pré determinada, exibe a mensagem se não for alcançada
 	if itens.Quantidade < 1 {
 		TratandoErros(w, "Quantidade minima de um(1) item não atingida", 422)
 		return
 	}
+	//Quantidade máxima pré determinada, exibe a mensagem se for atingida
 	if itens.Quantidade > 9999 {
 		TratandoErros(w, "Quantidade maxima de itens atingida", 422)
 		return
 	}
+	//Se tiver a quantidade pedida em estoque executo esse if
 	if livrobuscado.Estoque > itens.Quantidade {
+		//Subtraio a quantidade em estoque pela pedida
 		livrobuscado.Estoque = livrobuscado.Estoque - itens.Quantidade
+		//adiciono o o ID do pedido solicitado anteriormente no pedido_feito
 		itens.Pedido_feito = pedidobuscado.ID
+		//adiciono o titulo do livro pedido no livro_cadastrado
 		itens.Livro_cadastrado = livrobuscado.Titulo
+		//Calculo o valor baseando na quantidade de itens solicitados
 		itens.Valor_final = livrobuscado.Valor * float64(itens.Quantidade)
 
 	} else {
+		//Caso o estoque não seja suficiente exibo esssa mensagem
 		TratandoErros(w, "Quantidade solicitada superior a quantidade em estoque", 422)
 		return
 	}
 
+	//Função para alterar o estoque com o resultado da subtração
 	erro = AlterarEstoque(int(livro_id), livrobuscado.Estoque)
 	if erro != nil {
 		TratandoErros(w, "Erro ao alterar o estoque", 422)
 		return
 	}
 
+	//Função que vai fazer a conexão com o banco de dados (mais informações no arquivo "ccomandosBancoeErro")
 	db, erro := ConectandoNoBanco()
 	if erro != nil {
 		TratandoErros(w, "Erro ao se conectar com o banco de dados", 422)
@@ -101,6 +111,7 @@ func ItemDoPedido(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
+	//Crio o statement que vai inserir os dados na tabela do banco
 	statement, erro := db.Prepare("insert into itens(pedido_feito, livro_cadastrado, quantidade, valor_final) values(?, ?, ?, ?)")
 	if erro != nil {
 		fmt.Println(erro)
@@ -109,11 +120,13 @@ func ItemDoPedido(w http.ResponseWriter, r *http.Request) {
 	}
 	defer statement.Close()
 
+	//Executo o statement e salvo os dados inseridos
 	_, erro = statement.Exec(itens.Pedido_feito, itens.Livro_cadastrado, itens.Quantidade, itens.Valor_final)
 	if erro != nil {
 		TratandoErros(w, "Erro ao executar o statement", 422)
 		return
 	}
 
+	//Se não houve nenhum erro durante a execução do código exibo essa mensagem no final
 	TratandoErros(w, "Venda realizada com sucesso", 200)
 }
