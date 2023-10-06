@@ -53,7 +53,7 @@ func buscandoUMUsuario(ID int) (dados.Usuario, error) {
 	defer db.Close()
 
 	//Busco pelo ID de um usuário especifico
-	linhas, erro := db.Query("select * from usuario where id = ?", ID)
+	linhas, erro := db.Query("select id, nome from usuario where id = ?", ID)
 	if erro != nil {
 		return dados.Usuario{}, erro
 	}
@@ -70,20 +70,25 @@ func buscandoUMUsuario(ID int) (dados.Usuario, error) {
 	return usuarioencontrado, nil
 }
 
+// Função com finalidade de reduzir e organizar melhor o código
+// Essa função vau buscar os dados de um pedido especificado pelo ID e trazer para mim
 func BuscandoUMPedido(ID int) (dados.Pedido, error) {
 
+	//Chamo a função que vai fazer a conexão com o banco de dados (mais informações em "ComandoBancoeErro")
 	db, erro := ConectandoNoBanco()
 	if erro != nil {
 		return dados.Pedido{}, erro
 	}
 	defer db.Close()
 
-	linhas, erro := db.Query("select * from pedidos where id = ?", ID)
+	//Nas linhas da tabela busco pelos dados de um pedido especificado pelo ID
+	linhas, erro := db.Query("select id, user_cadastrado from pedidos where id = ?", ID)
 	if erro != nil {
 		return dados.Pedido{}, erro
 	}
 	defer linhas.Close()
 
+	//Escaneio todos os dados que foram buscados e retorno todos esses mesmos dados
 	var pedidoencontrado dados.Pedido
 	if linhas.Next() {
 		erro := linhas.Scan(&pedidoencontrado.ID, &pedidoencontrado.User_cadastrado)
