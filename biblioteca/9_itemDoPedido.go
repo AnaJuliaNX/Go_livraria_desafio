@@ -1,10 +1,11 @@
 package biblioteca
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"strconv"
-	"io"
-	"encoding/json"
 
 	"github.com/AnaJuliaNX/desafio2/dados"
 	"github.com/gorilla/mux"
@@ -19,7 +20,7 @@ func ItemDoPedido(w http.ResponseWriter, r *http.Request) {
 		TratandoErros(w, "Erro ao buscar o ID do pedido", 422)
 		return
 	}
-	
+
 	//Busco cada um dos dados do pedido
 	pedidobuscado, erro := BuscandoUMPedido(int(pedido_id))
 	if erro != nil {
@@ -36,10 +37,10 @@ func ItemDoPedido(w http.ResponseWriter, r *http.Request) {
 	//Busco os dados do livro pelo ID
 	livro_id, erro := strconv.ParseUint(parametro["livro_id"], 10, 32)
 	if erro != nil {
-		TratandoErros(w, "Erro ao buscar o ID do livro",422)
+		TratandoErros(w, "Erro ao buscar o ID do livro", 422)
 		return
 	}
-		
+
 	//Busco todos os dados desse livro
 	livrobuscado, erro := BuscandoUMLivro(int(livro_id))
 	if erro != nil {
@@ -67,13 +68,20 @@ func ItemDoPedido(w http.ResponseWriter, r *http.Request) {
 		TratandoErros(w, "Erro ao converter de json para struct", 422)
 		return
 	}
- 
+
+	if itens.Quantidade < 1 {
+		TratandoErros(w, "Quantidade minima de um(1) item não atingida", 422)
+		return
+	}
+	if itens.Quantidade > 9999 {
+		TratandoErros(w, "Quantidade maxima de itens atingida", 422)
+		return
+	}
 	if livrobuscado.Estoque > itens.Quantidade {
 		livrobuscado.Estoque = livrobuscado.Estoque - itens.Quantidade
 		itens.Pedido_feito = pedidobuscado.ID
-		itens.Livro_cadastrado = livrobuscado.Titulo 
+		itens.Livro_cadastrado = livrobuscado.Titulo
 		itens.Valor_final = livrobuscado.Valor * float64(itens.Quantidade)
-
 
 	} else {
 		TratandoErros(w, "Quantidade solicitada superior a quantidade em estoque", 422)
@@ -93,5 +101,19 @@ func ItemDoPedido(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	
+	statement, erro := db.Prepare("insert into itens(pedido_feito, livro_cadastrado, quantidade, valor_final) values(?, ?, ?, ?)")
+	if erro != nil {
+		fmt.Println(erro)
+		TratandoErros(w, "Erro ao criar o statement", 422)
+		return
+	}
+	defer statement.Close()
+
+	_, erro = statement.Exec(itens.Pedido_feito, itens.Livro_cadastrado, itens.Quantidade, itens.Valor_final)
+	if erro != nil {
+		TratandoErros(w, "Erro ao executar o statement", 422)
+		return
+	}
+
+	TratandoErros(w, "Venda realizada com sucesso", 200)
 }
